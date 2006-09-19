@@ -16,36 +16,48 @@ function cocomment_help($section='') {
 /*
  * Callbacks
  */
-
 function cocomment_comment($form, $op) {
   global $base_url, $user;
 
   $item = array();
   if ($op == 'form') {
-    $logged_in = $user->uid ? 'true' : 'false';    
+
     $site_title = variable_get('site_name', $_SERVER['HTTP_HOST']);
 
-//D echo "<pre>"; var_dump(array($op, $form)); echo "</pre>";
     $nid = $form['nid']['#value'];
     $node = node_load($nid);
 
-    $item['#suffix'] = <<<EOS
+    $node_title = addslashes($node->title);
+
+    $item['submit'] = $form['submit'];
+    $item['submit']['#attributes'] = array('id' => 'op_submit');
+
+    $item['#prefix'] = <<<EOS
 <script type="text/javascript">
-  var blogTool              = 'Drupal';
-  var blogURL               = '{$base_url}';
-  var blogTitle             = '{$site_title}';
-  var postURL               = '{$base_url}{$form['#action']}';
-  var postTitle             = '{$node->title}' 
-    + ': ' + document.forms.comment_form.elements['edit[subject]'].value;
-  var commentTitleFieldName  = 'edit[subject]';
-  var commentTextFieldName  = 'edit[comment]';
-  var commentButtonName     = 'op';
-  var commentAuthorLoggedIn = {$logged_in};
-  var commentAuthor         = '{$form['author']['#value']}';
-  var commentFormID         = 'comment_form';
-</script>
-<script id="cocomment-fetchlet" src="http://www.cocomment.com/js/enabler.js"></script>
+var coco = {
+  tool              : 'Drupal',
+  siteurl           : '{$base_url}',
+  sitetitle         : '{$site_title}',
+  pageurl           : '{$base_url}{$form['#action']}',
+  pagetitle         : '{$node_title}',
+
 EOS;
+    if (isset($form['author']['#value'])) {
+      $item['#prefix'] .= "  author            : '{$form['author']['#value']}',\n";
+    }
+    else {
+      $item['#prefix'] .= "  authorID          : 'edit[name]',\n";
+    }
+    $item['#prefix'] .= <<<EOS
+  formID            : 'comment_form',
+  textareaID        : 'edit[comment]',
+  buttonID          : 'op_submit'
+}
+</script><script 
+  type="text/javascript" id="cocomment-fetchlet" 
+  src="http://www.cocomment.com/js/enabler.js"></script>
+EOS;
+
+    return $item;
   }
-  return $item;
 }
