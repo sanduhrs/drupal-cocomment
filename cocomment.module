@@ -1,20 +1,15 @@
 <?php
 // $Id$
+
 /**
- * Module hooks
+ * CoComment integration
+ * http://www.cocomment.com
+ * 
+ * Developed by Olaf Schettler
  */
 
-function cocomment_help($section='') {
-  switch ($section) {
-    case 'admin/help#cocomment':
-
-    case 'admin/modules#description':
-      return t('Post comments to the coComment website.');
-  }
-}
-
 /*
- * Callbacks
+ * Implementation of hook_comment().
  */
 function cocomment_comment($form, $op) {
   global $base_url, $user;
@@ -22,23 +17,23 @@ function cocomment_comment($form, $op) {
   $item = array();
   if ($op == 'form') {
 
-    $site_title = variable_get('site_name', $_SERVER['HTTP_HOST']);
-
+    $site_title = check_plain(variable_get('site_name', $_SERVER['HTTP_HOST']));
+    
     $nid = $form['nid']['#value'];
+    $url = url('node/'. $node->nid, NULL, NULL, TRUE);
     $node = node_load($nid);
-
-    $node_title = addslashes($node->title);
+    $node_title = check_plain($node->title);
 
     $item['submit'] = $form['submit'];
     $item['submit']['#attributes'] = array('id' => 'op_submit');
-
+    
     $item['#prefix'] = <<<EOS
 <script type="text/javascript">
 var coco = {
-  tool              : 'Drupal',
+  tool              : 'Drupal (+http://drupal.org/)',
   siteurl           : '{$base_url}',
   sitetitle         : '{$site_title}',
-  pageurl           : '{$base_url}{$form['#action']}',
+  pageurl           : '{$url}',
   pagetitle         : '{$node_title}',
 
 EOS;

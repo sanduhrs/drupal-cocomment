@@ -1,0 +1,4 @@
+; $Id$
+name = CoComment
+description = Extends comment forms for CoComment integration.
+dependencies = comment
