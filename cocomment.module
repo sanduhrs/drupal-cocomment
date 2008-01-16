@@ -4,54 +4,56 @@
 /**
  * CoComment integration
  * http://www.cocomment.com
- * 
- * Developed by Olaf Schettler
+ *
+ * @author 
+ *   Developed by Olaf Schettler
+ *   Update to Drupal-5 by Stefan Auditor <stefan.auditor@erdfisch.de>
  */
 
-/*
+/**
+ * Implementation of hook_menu().
+ */
+function cocomment_menu($may_cache) {
+  if (!$may_cache) {
+    //This is a workaround to reset $op to it's original value
+    //that has been changed by cocomment's enabler.js and prevents
+    //the comment submission
+    if ($_POST['op'] == 'Submit Query') {
+      $_POST['op'] = t('Post comment');
+    }
+  }
+}
+
+/**
  * Implementation of hook_comment().
  */
 function cocomment_comment($form, $op) {
   global $base_url, $user;
 
-  $item = array();
   if ($op == 'form') {
+    //load necessary information
+    $node = node_load($form['nid']['#value']);
 
-    $site_title = check_plain(variable_get('site_name', $_SERVER['HTTP_HOST']));
-    
-    $nid = $form['nid']['#value'];
-    $url = url('node/'. $node->nid, NULL, NULL, TRUE);
-    $node = node_load($nid);
-    $node_title = check_plain($node->title);
+    //prepare data for cocomment
+    $coco = array(
+      'tool'        => 'Drupal (+http://drupal.org/)',
+      'siteurl'     => $base_url,
+      'sitetitle'   => variable_get('site_name', $_SERVER['HTTP_HOST']),
+      'pageurl'     => url('node/'. $node->nid, NULL, NULL, TRUE),
+      'pagetitle'   => $node->title,
+      'textareaID'  => 'comment',
+      'buttonID'    => 'edit-submit',
+      'author'      => $user->name ? $user->name : '',
+      'authorID'    => 'name',
+      'formID'      => 'comment-form',
+    );
+    //add data to site header
+    drupal_add_js('coco = '. drupal_to_js($coco), 'inline');
 
-    $item['submit'] = $form['submit'];
-    $item['submit']['#attributes'] = array('id' => 'op_submit');
-    
-    $item['#prefix'] = <<<EOS
-<script type="text/javascript">
-var coco = {
-  tool              : 'Drupal (+http://drupal.org/)',
-  siteurl           : '{$base_url}',
-  sitetitle         : '{$site_title}',
-  pageurl           : '{$url}',
-  pagetitle         : '{$node_title}',
-
-EOS;
-    if (isset($form['author']['#value'])) {
-      $item['#prefix'] .= "  author            : '{$form['author']['#value']}',\n";
-    }
-    else {
-      $item['#prefix'] .= "  authorID          : 'edit[name]',\n";
-    }
-    $item['#prefix'] .= <<<EOS
-  formID            : 'comment_form',
-  textareaID        : 'edit[comment]',
-  buttonID          : 'op_submit'
-}
-</script><script 
-  type="text/javascript" id="cocomment-fetchlet" 
-  src="http://www.cocomment.com/js/enabler.js"></script>
-EOS;
+    //add cocomment's enabler.js to the site
+    $item['cocomment'] = array(
+      '#value' => '<script type="text/javascript" id="cocomment-fetchlet" src="http://www.cocomment.com/js/enabler.js"></script>',
+    );
 
     return $item;
   }
