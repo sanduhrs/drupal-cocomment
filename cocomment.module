@@ -30,7 +30,7 @@ function cocomment_menu($may_cache) {
 function cocomment_comment($form, $op) {
   global $base_url, $user;
 
-  if ($op == 'form') {
+  if ($op == 'form' && $form['submit']) {
     //load necessary information
     $node = node_load($form['nid']['#value']);
 
@@ -51,12 +51,9 @@ function cocomment_comment($form, $op) {
     drupal_add_js('coco = '. drupal_to_js($coco), 'inline');
 
     //add cocomment's enabler.js to the site
-    //when submission is possible
-    if ($form['submit']) {
-      $item['cocomment'] = array(
-        '#value' => '<script type="text/javascript" id="cocomment-fetchlet" src="http://www.cocomment.com/js/enabler.js"></script>',
-      );
-    }
+    $item['cocomment'] = array(
+      '#value' => '<script type="text/javascript" id="cocomment-fetchlet" src="http://www.cocomment.com/js/enabler.js"></script>',
+    );
 
     return $item;
   }
