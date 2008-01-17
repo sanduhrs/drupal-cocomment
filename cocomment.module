@@ -18,8 +18,10 @@ function cocomment_menu($may_cache) {
     //This is a workaround to reset $op to it's original value
     //that has been changed by cocomment's enabler.js and prevents
     //the comment submission
-    if ($_POST['op'] == 'Submit Query') {
-      $_POST['op'] = t('Post comment');
+    if ($_POST['form_id'] == 'comment_form') {
+      if ($_POST['op'] != t('Preview comment') AND $_POST['op'] != t('Post comment')) {
+        $_POST['op'] = t('Post comment');
+      }
     }
   }
 }
