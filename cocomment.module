@@ -51,9 +51,12 @@ function cocomment_comment($form, $op) {
     drupal_add_js('coco = '. drupal_to_js($coco), 'inline');
 
     //add cocomment's enabler.js to the site
-    $item['cocomment'] = array(
-      '#value' => '<script type="text/javascript" id="cocomment-fetchlet" src="http://www.cocomment.com/js/enabler.js"></script>',
-    );
+    //when submission is possible
+    if ($form['submit']) {
+      $item['cocomment'] = array(
+        '#value' => '<script type="text/javascript" id="cocomment-fetchlet" src="http://www.cocomment.com/js/enabler.js"></script>',
+      );
+    }
 
     return $item;
   }
