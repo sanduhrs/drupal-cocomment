@@ -1,7 +1,6 @@
 cocomment.module
 README.txt
 
-$Id$
 
 Description
 ------------
